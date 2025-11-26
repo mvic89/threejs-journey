@@ -1,1 +1,39 @@
-Three.js - Journey notes
+Three.js - Journey general notes
+
+to post code snippets inside discord you use:
+```js
+  your code
+```
+(three backticks & js) insert your code (and three backticks again)
+
+This will display your code inside discord when you're asking for help and want to show your code. (much easier to read)
+
+---------------------------------------------
+
+three.js makes writing shaders much easier, because when you use WebGL, you have to define each point in order to create shapes. We can still interact with WebGL through three.js and create our own shaders / provide our own information.
+
+---------------------------------------------
+All lessons have a 'starter' file (which is the one you need to follow the exercises)
+All lessons also have a 'final' file (which is the final result of the exercises)
+
+---------------------------------------------
+windows commands:
+  pwd (shows you the path of where you are)
+  ls (shows a list of all the directories)
+  cd (change to the current directory)
+  tab (auto-writes what you write) (ex. cd doc(press tab) autowrites is to 'cd document')
+
+---------------------------------------------
+NPM might warn you about 'vulnerabilities'. Most are harmless and the course dependencies are updated regularly so don't try to fix them using the command suggested by NPM.
+
+---------------------------------------------
+Here are a few things you need to know about the Vite configuration and some reminders:
+   - You need to run npm install only once after downloading the project.
+   - You need to run npm run dev each time you want to run the server and start coding. Your terminal might seem stuck, but it's perfectly normal, and it means that the server is running.
+   - The only folders you need to explore, are the src/ and the static/ folders.
+   - In the src/ folder, you can find the traditional index.html, script.js, and style.css files.
+   - You can put static files (also called “public files”) in the static/ folder. Those files will be served as if they were available in the root folder (without having to write static/). You can test by adding /door.jpg at the end of the URL 
+    (http://localhost:5173/door.jpg). We'll use this to load textures and models later.
+   - The page will automatically reload as you save any of those files.
+   - You can access your local server from any other device on the same network by typing the same URL that looks something like this http://192.168.1.25:5173. It’s very useful to debug on other devices like mobiles. If it’s not working, 
+    it’s usually because of your firewall.
