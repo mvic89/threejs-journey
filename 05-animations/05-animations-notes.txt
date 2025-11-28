@@ -1,0 +1,146 @@
+Animations Notes
+
+Animating is like doing stop motion
+  Move the object
+  Take a picture
+  Move the object a bit more
+  Take a picture
+  etc.
+
+Most screens run at 60 frames per seconds (FPS)
+
+In order to do animations we need to upadte the ojects and do a render on each frame.
+We're going to do that in a function and call this function with:
+  window.requestAnimationFrame(...)
+
+The purpose of 'requestAnimationFrame' is to call the function provided on the next frame.
+We're going to cal the same function on each new frame. 
+
+Create a tick function and call it.
+In the function call it again but using window.requestAnimationFrame(...)
+
+  const tick = () => { // creates an eternal loop that console.logs 'tick' with each frame per second
+    console.log('tick')
+    window.requestAnimationFrame(tick)
+  }
+
+  tick() 
+
+
+Move the renderer.render(...) into the tick function and increase the cube rotation
+
+  const tick = () => {
+    
+    mesh.rotation.y += 0.01
+
+    renderer.render(scene, camera)
+
+    window.requestAnimationFrame(tick)
+  }
+
+  tick() 
+
+-------------------------------------------------
+
+Adaptation to the framerate
+
+Congratulations, you now have a Three.js animation.
+The problem is, if you test this code on a computer with high frame rate, the cube will rotate faster, and if you test on a lower frame rate, the cube will rotate slower.
+
+To adapt the animation to the framerate, we need to know how much time it's been since the last tick.
+
+First, we need a way to measure time. In native JavaScript, you can use Date.now() to get the current timestamp:
+  const time = Date.now()
+
+What you need now is to subtract the current timestamp to that of the previous frame to get what we can call the deltaTime and use this value when animating objects:
+
+let time = Date.now()
+
+const tick = () =>
+{
+		// Time
+    const currentTime = Date.now()
+    const deltaTime = currentTime - time
+    time = currentTime
+
+    // Update objects
+    mesh.rotation.y += 0.01 * deltaTime
+
+    // ...
+}
+
+tick()
+
+This will rotate the cube in the same speed no matter what frame rate you have. (therefore solves the problem) (you don't want your website animation to go too fast or too slow)
+
+
+-----------------------
+Another solution is to use the 'Clock'
+
+While this code isn't that complicated, there is a built-in solution in Three.js named Clock that will handle the time calculations.
+
+You simply have to instantiate a Clock variable and use the built-in methods like getElapsedTime(). This method will return how many seconds have passed since the Clock was created.
+
+You can use this value to rotate the object:
+
+/**
+ * Animate
+ */
+const clock = new THREE.Clock()
+
+const tick = () =>
+{
+    const elapsedTime = clock.getElapsedTime()
+
+    // Update objects
+    mesh.rotation.y = elapsedTime
+
+    // ...
+}
+
+tick()
+
+-----------------------
+Another of Clock methods is 'getDelta(...), but don't use it! (it messes with the internal logic of the class.)
+
+------------------------------------------------------
+Using a library
+
+If you want to have more control, creates tweens, create timelines etc. you can use a library like GSAP (Greensock)
+Add GSAP to the dependencies with:
+  npm install gsap@3.12
+
+GSAP is now available in the node_modules/ folder, and we can import it in our script.js:
+
+import './style.css'
+import * as THREE from 'three'
+import gsap from 'gsap'
+
+// ...
+
+-----------------------
+
+How to create a tween with gsap:
+
+/**
+ * Animate
+ */
+gsap.to(mesh.position, { duration: 1, delay: 1, x: 2 })
+
+const tick = () =>
+{
+    // Render
+    renderer.render(scene, camera)
+
+    // Call tick again on the next frame
+    window.requestAnimationFrame(tick)
+}
+
+tick()
+
+GSAP has a built-in requestAnimationFrame, so you don't need to update the animation by yourself, but still, if you want to see the cube moving, you need to keep doing the renders of your scene on each frame.
+
+-----------------------------------------------
+Choosing the right solution
+
+As for choosing between native JS and an animation library, it's a matter of what you want to achieve. If you're going to create a carousel that spins forever, you don't need any library for that. But if you want to animate, for instance, the swing of a sword, you might prefer to use a library.
