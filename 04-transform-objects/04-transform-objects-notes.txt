@@ -1,0 +1,112 @@
+Transform Objects Notes
+
+There are 4 properties to transform objects in our scene
+    position (to move the object)
+    scale (to resize the object)
+    rotation (to rotate the object)
+    quaternion (to also rotate the object; more about that later)
+
+All classes that inherit from the Object3D class possess those properties like PerspectiveCamera or Mesh and classes that we haven't covered yet.
+You can see from what classes inherit each class on top of the Three.js documentation.
+
+SO All classes that inherti from Object3D has the properties 'Position', 'Scale', 'Rotation' and 'Quaternion'.
+Those properties will be compiled in what we call matrices. Matrices are used internally by Three.js, by the WebGL, 
+and by the GPU to transform things. Fortunately, you don't have to handle matrices by yourself and you can just modify the previously-mentioned properties.
+
+-------------------------------------
+Move Objects
+
+The position possesses 3 essential properties, which are x, y, and z. Those are the 3 necessary axes to position something in a 3D space.
+
+The direction of each axis is purely arbitrary, and it can vary according to the environment. In Three.js, we usually consider that the y axis is going upward, the z axis is going backward, and the x axis is going to the right.
+
+As for the meaning of 1 unit, it's up to you. 1 can be 1 centimeter, 1 meter, or even 1 kilometer. I recommend that you adapt the unit to what you want to build. If you're going to create a house, you probably should think of 1 unit as 1 meter.
+
+Always do the 'position ' and move around the object before the 'Render' and after the creation of the 'Object'. (otherwise it won't work.)
+    - You can't take a picture of the object and move it afterward. (it won't render the position then)
+    - You can't move an object before it has been created either.
+    - therefore position has do be done after '* Objects' and before '* Render'
+
+-----------------------
+The position property is not any object. It's an instance of the Vector3 class. While this class has an x, a y, and a z property, it also has many useful methods.
+
+Vector = an arrow that connects a point to another point. (A -> B) 
+
+Vector3 Methods:
+    length():
+    console.log(mesh.position.length()) //console.logs the distance from the center of the scene to the position of the mesh.
+    distanceTo():
+    console.log(mesh.position.distanceTo(camera.position)) //console.logs the distance from the mesh.position to the camera's position.
+    normalize():
+    mesh.position.normalize() // reduce the length of the vector to 1 unit but preserve it's direction (if you console.log(mesh.position.length), it will show '1').
+    set(x,y,z):
+    mesh.position.set(0.7, -0.6, 1) // sets all 3 axis values all at once.
+
+-----------------------
+AxesHelper (creates visual colour-lined axis)
+
+Positioning things in space can be hard. One good solution is to use the 'AxesHelper' to display a coloured line for each axis.
+
+-----------------------
+Scale Objects
+
+Scale has three properties = x, y, z
+
+-----------------------
+Rotate Objects
+
+with 'rotation' property or with 'quaternion' property
+Updating one will automatically update the other.
+
+'rotation' also has x, y, z properties but it's an 'Euler' (not a Vector3)
+When you change the x, y , z properties you can imagine putting a stick through your objects center in the axis direction and then rotating that object on that stick.
+
+The value of these axes is expressed in radians. If you want to achieve half a rotation, you'll have to write something like 3.14159... You probably recognize that number as π. In native JavaScript, you can end up with an approximation of π using Math.PI.
+
+Be careful! when you rotate on an axis, you might also rotate the other axis.
+The rotation goes by default in the x, y, z order and you can get strange result like an axis not working anymore. this is called a 'gimbal lock'
+
+we fix the gimbal lock by changing the order by using the 'reorder()' method.
+    mesh.rotation.reorder('YXZ')
+    Do it before changing the 'rotation'
+    if you make a FPS game, you need you start with the 'y' axis to look from 'left / right', then you use the 'x' axis to look 'up / down'. the 'z' axis we can do with since we use the keys to go 'foward / backwards'.
+
+-------
+Quaternion
+
+Video about Quaternions:
+https://www.youtube.com/watch?v=zjMuIxRvygQ
+
+Euler is easy to understand but this axis order can be problematic.
+This is why most engines and 3D software use 'Quartenion'
+
+Quartenion is like a representation of 'rotation' but with a more mathematical way.
+Quaternion is a bit complicated, but when Quaternion is updated, the rotation is updated. (and wise versa)
+
+-------
+Object3D instances have a 'lookAt(...)' method which rotates the object so that its -z faces the target you provided.
+The target must be a 'Vector3' (so it can be the scene, the mesh object etc) (https://threejs.org/docs/#Vector3)
+    camera.lookAt(new THREE.Vector3(3, 0, 0)) looks three units to the right (x axis) of the Vector3 (which contains the scene)
+    camera.lookAt(mesh.position) = looks at the positon at the position of the mesh from the z axis perspective.
+
+----------------------------
+Combining transformations
+
+You can combine position, rotation (or quaternion) scale and scale in any order:
+    mesh.position.x = 0.7
+    mesh.position.y = - 0.6
+    mesh.position.z = 1
+    mesh.scale.x = 2
+    mesh.scale.y = 0.25
+    mesh.scale.z = 0.5
+    mesh.rotation.x = Math.PI * 0.25
+    mesh.rotation.y = Math.PI * 0.25
+
+------------------------------
+Scene Graph
+
+If you have a house that's combined of a lot of smaller objects, and want to make the house bigger. Instead of scaling each object of it's own, you can create a group of all the house objects and scale it.
+
+you can put obejcts inside groups and use postion, rotation (or quaternion) and scale on those groups.
+
+To do that, use the 'Group' class (which is inherited from Object3D)
