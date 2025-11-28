@@ -37,3 +37,8 @@ Here are a few things you need to know about the Vite configuration and some rem
    - The page will automatically reload as you save any of those files.
    - You can access your local server from any other device on the same network by typing the same URL that looks something like this http://192.168.1.25:5173. It’s very useful to debug on other devices like mobiles. If it’s not working, 
     it’s usually because of your firewall.
+
+----------------------------------------------
+Inside every chapter folder (ex. 04-transform-objects), you create an 'exercise' folder where you extract your chapter 'starter pack' to.
+After that, do an 'npm install' from that 'exercise' folder.
+don't forget to create an '.gitignore' file, which ignores the 'node_modules' (you don't want to push 1000s of file up to github.)
