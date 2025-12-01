@@ -1,0 +1,289 @@
+Cameras Notes
+
+https://threejs.org/docs/#Camera
+
+Camera
+The Camera class is what we call an abstract class. You're not supposed to use it directly, but you can inherit from it to have access to common properties and methods. Some of the following classes inherit from the Camera class.
+
+Array Camera
+the 'Array Camera' render the scene from multiple cameras on specific areas of the render.
+  ex. you can use 'array camera' to create 'split screen multiplayer' render
+
+Stereo Camera
+The 'Stereo Camera' render the scene through two cameras that mimic the eyes to create a parallax effect.
+  ex. use with devices like VR headset, read and blue glasses or cardboard.
+
+Cube Camera
+The 'Cube Camera' does 6 renders, each one facing a different direction.
+Can render the surrounding for things like environment map, reflection or shadow map.
+
+Ortographic Camera
+The 'Ortographic Camera' render the scene without perspective.
+  ex. age of empires where the characters stay the same perspective no matter how close / far they are from you.
+
+Perspective Camera
+The 'Perspective Camera' render the scene with perspective.
+
+Ortographic Camera and Perpective Camera are the ones we will use in 'Chapter 1 Basics Lessons'
+
+--------------------------------------------
+Perspective Camera
+
+As we saw earlier, the PerspectiveCamera class needs some parameters to be instantiated, but we didn't use all the possible parameters. Add the third and fourth parameters:
+
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 1, 100)
+
+first parameter (75) is the 'Field of view':
+    vertical vision angle. (not horizontal)
+    in degrees
+    also called 'fov'
+
+Field of view
+
+The first parameter called field of view corresponds to your camera view's vertical amplitude angle in degrees. If you use a small angle, you'll end up with a long scope effect, and if you use a wide-angle, you'll end up with a fish eye effect because, in the end, what the camera sees will be stretched or squeezed to fit the canvas.
+
+As for choosing the right field of view, you'll have to try things out. I usually use a field of view between 45 and 75.
+
+second parameter (sizes.width / sizes.height) is the 'Aspect ratio':
+  the width of the render divided by the height of the render.
+
+While you might think that it's obviously the canvas width by the canvas height and Three.js should calculate it by itself, it's not always the case if you start using Three.js in very specific ways. But in our case, you can simply use the canvas width and the canvas height.
+
+The third and fourth parameters (1, 100) called near and far, correspond to how close and how far the camera can see. Any object or part of the object closer to the camera than the near value or further away from the camera than the far value will not show up on the render.
+
+You can see that like in those old racing games where you could see the trees pop up in the distance.
+
+While you might be tempted to use very small and very large values like 0.0001 and 9999999 you might end up with a bug called z-fighting where two faces seem to fight for which one will be rendered above the other.
+
+https://twitter.com/FreyaHolmer/status/799602767081848832
+
+https://twitter.com/Snapman_I_Am/status/800567120765616128
+
+Try to use reasonable values and increase those only if you need it. In our case, we can use 0.1 and 100
+
+-----------------------------------------
+Ortographic Camera
+
+OrtographicCamera differs from PerspectiveCamera by it's lack of perspective.
+Obejcts has the same size regardless of their distance to the camera.
+
+Parameters:
+Instead of a field of view, we provide how far the camera can see in each direction (left, right, top and bottom).
+Then the 'near' and 'far'.
+
+As you can see, there is no perspective, and the sides of our cube seem parallel. The problem is that our cube doesn't look cubic.
+
+That is due to the values we provided for the left, right, top, and bottom which are 1 or - 1, meaning that we render a square area, but that square area will be stretched to fit our rectangle canvas and our canvas isn't a square.
+
+We need to use the canvas ratio (width by height). Let's create a variable named aspectRatio (just like the PerspectiveCamera) and store that ratio in it:
+
+const aspectRatio = sizes.width / sizes.height
+const camera = new THREE.OrthographicCamera(- 1 * aspectRatio, 1 * aspectRatio, 1, - 1, 0.1, 100)
+
+-----------------------------------------
+Custom Control
+
+We want to control the camera position witht he mouse.
+
+Comment the 'OrthgraphicCamera'
+Uncomment the 'PerspectiveCamera'
+Move the camera so it faces the cube (by commenting out 'camera.position.x' and 'camera.position.y')
+Remove the mesh rotation in the 'tick' function (by commenting out the 'mesh.rotation.y')
+
+first we need the mouse coordinates on the page.
+Listen to the 'mousemove' event with 'addEventListener' and retrieve the 'event.clientX' and event.clientY' 
+
+// Cursor
+window.addEventListener('mousemove', (event) =>
+{
+    console.log(event.clientX, event.clientY)
+})
+
+Those values (clientX and clientY) are in pixel and it's better to adjust them.
+We want a value with an amplitude of 1 (that goes from 0 - 1) and that can be both positive and negative
+
+Therefore, we create a cursor object:
+
+const  cursor = {
+  x: 0,
+  y: 0
+}
+
+Update the 'x' and 'y' in the 'mousemove':
+
+window.addEventListener('mousemove', (event) =>
+{
+    cursor.x = event.clientX / sizes.width - 0.5
+    cursor.y = event.clientY / sizes.height - 0.5
+
+    console.log(cursor.x, cursor.y)
+})
+
+Update the camera position in the tick function with the cursor coordinates
+
+const tick = () =>
+{
+    // ...
+
+    // Update camera
+    camera.position.x = cursor.x
+    camera.position.y = cursor.y
+
+    // ...
+}
+
+As you can see, it's working but the axes movements seem kind of wrong. This is due to the position.y axis being positive when going upward in Three.js but the clientY axis being positive when going downward in the webpage.
+
+You can simply invert the cursor.y while updating it by adding a - in front of the whole formula (don't forget the parentheses):
+
+window.addEventListener('mousemove', (event) =>
+{
+    cursor.x = event.clientX / sizes.width - 0.5
+    cursor.y = - (event.clientY / sizes.height - 0.5)
+})
+
+Increase the amplitude by multiplying the 'cursor.x' and 'cursor.y'
+Ask the camera to look at the mesh with lookAt(...):
+
+const tick = () =>
+{
+    // ...
+
+    // Update camera
+    camera.position.x = cursor.x * 5
+    camera.position.y = cursor.y * 5
+    camera.lookAt(mesh.position) //makes the camera look at the mesh (gives an all around look at the cube)
+
+    // ...
+}
+
+We can go even further by doing a full rotation of the camera around the mesh by using Math.sin(...) and Math.cos(...).
+
+sin and cos, when combined and used with the same angle, enable us to place things on a circle. To do a full rotation, that angle must have an amplitude of 2 times π (called "pi"). Just so you know, a full rotation is called a "tau" but we don't have access to this value in JavaScript and we have to use π instead.
+
+You can access an approximation of π in native JavaScript using Math.PI.
+
+To increase the radius of that circle, you can simply multiply the result of Math.sin(...) and Math.cos(...):
+
+const tick = () =>
+{
+    // ...
+
+    // Update camera
+    camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 2
+    camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 2
+    camera.position.y = cursor.y * 3
+    camera.lookAt(mesh.position)
+
+    // ...
+}
+
+tick()
+
+While this is a good start to control the camera, Three.js has integrated multiple classes called controls to help you do the same and much more.
+--------------------------------------------
+Built-in controls
+
+If you type "controls" in the Three.js documentation, you'll see that there are a lot of pre-made controls. We will only use one of them for the rest of the course, but it can be interesting to know their role.
+
+https://threejs.org/docs/index.html?q=controls#Controls
+
+Device Orientation Controls
+(In the latest versions of Three.js, DeviceOrientationControls has been removed because a reliable implementation across all devices was not possible.)
+
+DeviceOrientationControls will automatically retrieve the device orientation if your device, OS, and browser allow it and rotate the camera accordingly.
+Use it to crate immersive universes or VR experiences.
+
+Fly Control
+The 'FlyControl' enable moving the camera like if you were on a spaceship. (or a fighterj jet.)
+You can rotate on all 3 axes, go forward and go backward.
+
+First Person Control
+The 'FirstPersonControl' is like 'FlyControls' but with a fixed up axis (you can't barrel-rolls (or spin around))
+Doesn't work like in 'FPS' games.
+
+Pointer Lock Controls
+the 'PointerLockControls' uses the 'pointer lock JavaScript API'.
+Hard to use and almost only handles the pointer lock and camera rotation.
+The mouse disappears but the camera movement of the mouse updates
+
+Orbit Controls
+The 'OrbitControls' is similar to the controls we've made up to this point but with more features.
+
+Trackball Controls
+The 'TrackbackControls' is like 'OrbitControls' without the certical angle limit.
+
+Transform Controls
+The 'TransformControls' has nothing to do with the camera
+It moves / scales / rotates an object just like in blender
+
+Drag Controls
+The 'DragControls' has nothing to do with the camera.
+It's used to move objects by using 'shift + click'.
+
+We will only use the OrbitControls in this course but feel free to test the other classes.
+
+---------------------------------------------
+OrbitControls
+
+https://threejs.org/docs/#OrbitControls
+
+We will start by commenting out the part where we've update the 'camera' in the 'tick' function.
+
+--------------------
+Instantiating
+
+First, we need to instantiate a variable using the OrbitControls class. While you might think you can use THREE.OrbitControls here, you are unfortunately mistaken.
+
+The OrbitControls class is part of those classes that are not available by default in the THREE variable. That decision helps to reduce the weight of the library. And this is where our Vite template comes in.
+
+The OrbitControls class may not be available in the THREE variable; it is still located in the dependencies folder. To import it, you must provide the path from inside the '/node_modules/' folder, which is '/three/examples/jsm/controls/OrbitControls.js':
+
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+
+You can now instantiate a variable using the class OrbitControls (without the THREE.) and make sure to do that after creating the camera.
+
+For it to work, you must provide the camera and the element in the page that will handle the mouse events as parameters:
+
+// Controls
+const controls = new OrbitControls(camera, canvas)
+
+-------
+In the latest versions of Three.js, you can use /addons/ instead of /examples/jsm/:
+
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+
+It’s just an alias and the result is the same.
+
+You might see a mix of /addons/ and /examples/jsm/ throughout the course.
+
+-------
+Now! instatiate the Orbit Controls between the '//Orthographic camera' and the '//Renderer'
+
+The OrbitControls class needs the camera and a DOM element for mouse events:
+  const controls = new OrbitControls(camera, canvas)
+
+Now you can drag'n'drop & rotate the cube, as well as zoom in / zoom out! (Awesome!)
+
+-------
+Target
+By default, the camera is looking at the center of the scene.
+We can change the 'target' property, which is a Vector3:
+  controls.target.y = 2
+  constrols.update()
+
+-------
+Damping
+The 'Damping' will smooth out the animation by adding some kind of acceleration and friction.
+To enable the damping, switch the 'enableDamping' property to 'true'.
+  const controls = new OrbitControls(camera, canvas)
+  controls.enableDamping = true
+
+for 'Damping' to work, you also need to update the controls inside the 'tick' function (right above //Render).
+
+---------------
+When to use Built-in Controls vs. Custrom Controls
+
+Controls are handy, but they have limitation.
+If you want to use those, make sure they support all the features you need.
+If not, you'll have to do it on your own.
