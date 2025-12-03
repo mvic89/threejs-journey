@@ -35,6 +35,56 @@ window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+
+})
+
+/**
+ * Handle Fullscreen
+ * To leave the fullscreen, we press the 'ESC' button.
+ */
+
+window.addEventListener('dblclick', () => {
+    
+    // Fullscreen without prefixed versions (works with every browser except 'Safari')
+    // if (!document.fullscreenElement) {
+    //     canvas.requestFullscreen() // requestFullScreen() method enters the fullscreen w. double click
+    // } else {
+    //     document.exitFullscreen() // exitFullscreen() methods exits the fullscreen w. double click
+    // }
+
+    // Fullscreen with prefixed versions (works with every browser, including 'Safari')
+    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
+
+    if(!fullscreenElement)
+    {
+        if(canvas.requestFullscreen)
+        {
+            canvas.requestFullscreen()
+        }
+        else if(canvas.webkitRequestFullscreen)
+        {
+            canvas.webkitRequestFullscreen()
+        }
+    }
+    else
+    {
+        if(document.exitFullscreen)
+        {
+            document.exitFullscreen()
+        }
+        else if(document.webkitExitFullscreen)
+        {
+            document.webkitExitFullscreen()
+        }
+    }
+
 })
 
 /**
@@ -57,6 +107,8 @@ const renderer = new THREE.WebGLRenderer({
     canvas: canvas
 })
 renderer.setSize(sizes.width, sizes.height)
+// Updates the pixel ratio of my render (also sets the limit of the pixel ratio to '2')
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)) // Always limit the pixel ratio to 2, otherwise we'll have performance issues on devices with a very high pixel ratio
 
 /**
  * Animate
