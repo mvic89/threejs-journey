@@ -1,0 +1,131 @@
+Fullscreen and Resizing notes
+
+Our canvas current resolution is '800x600' (const = sizes)
+Let's fix that and fill the whole available space
+
+-----------------------------------------------
+Fit in the viewport
+Viewport is the window that shows your screen and the objects inside it.
+
+To get the viewport width and heigt, use 'window.innerWidth' and 'window.innerHeight':
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight
+}
+
+It's working but there is a margin on the top and the left, and we can scroll
+This is because of the browser default stylings.
+
+-----------------------
+
+Now, we're going to add CSS to the 'src/style.css' file
+
+You can write standard CSS just like you're used to, and the page will automatically reload.
+
+A good thing to do first would be to remove any type of margin or padding on all elements by using a wildcard *:
+
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+Then, we can fix the canvas on the top left using its webgl class to select it:
+
+.webgl
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+You don't need to specify width or height on the canvas because Three.js is already taking care of that when you call the renderer.setSize(...) method.
+
+This is a good opportunity to fix a small problem on our canvas. Maybe you've noticed a blue outline on it when drag and dropping. This mostly happens on latest versions of Chrome. To fix that, we can simply add an outline: none; on the .webgl:
+
+.webgl
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+}
+
+If you want to remove any type of scrolling even on touch screens, you can add an overflow: hidden on both html and body:
+
+html,
+body
+{
+    overflow: hidden;
+}
+
+------------------
+Handle Resize
+
+To resize the canvas, we first need to know when the window is being resized. To do so, you can listen to the resize event on window.
+
+Add the resize listener right after the sizes variable:
+
+window.addEventListener('resize', () =>
+{
+    console.log('window has been resized')
+})
+
+Now that we trigger a function when the window is being resized, we need to update few things in our code.
+
+First, we must update the sizes variable:
+
+window.addEventListener('resize', () =>
+{
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+})
+
+Secondly, we must update the camera aspect ratio by changing its aspect property:
+
+window.addEventListener('resize', () =>
+{
+    // ...
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+})
+
+When you change camera properties like aspect you also need to update the projection matrix using camera.updateProjectionMatrix(). We will talk about matrices later:
+
+window.addEventListener('resize', () =>
+{
+    // ...
+
+    camera.updateProjectionMatrix()
+})
+
+Finally, we must update the renderer. Updating the renderer will automatically update the canvas width and height:
+
+window.addEventListener('resize', () =>
+{
+    // ...
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+})
+
+All together:
+
+window.addEventListener('resize', () =>
+{
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+})
+
+---------------------------------------------------
+10min19sek 07 fullscreen and resizing recording.
