@@ -1,0 +1,15 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  overflow: hidden; /* prevents scrolling */
+}
+
+.webgl {
+  position: fixed; /*you can also use 'absolute' */
+  top: 0;
+  left: 0;
+  outline: none;
+}
