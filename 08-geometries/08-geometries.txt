@@ -1,0 +1,113 @@
+Geometries notes
+
+Up until this point we've used 'BoxGeometry', but there are many other geometries.
+But what is geometry in Three.js?
+
+-------------------------------------------
+What is Geometry?
+
+In Three.js, geometries are composed of vertices (point coordinates in 3D spaces) and faces (triangles that join those vertices to create a surface).
+
+We use geometries to create meshes, but you can also use geometries to form particles. Each vertex (singular of vertices) will correspond to a particle, but this is for a future lesson.
+
+We can store more data than the position in the vertices. A good example would be to talk about the UV coordinates or the normals. As you'll see, we will learn more about those later.
+
+-------------------------------------------
+Built-in Geometries
+
+All the following 'geometries' inherit from the 'BufferGeometry' class.
+https://threejs.org/docs/#BufferGeometry
+This class has many built-in methods like 'translate(...)', 'rotateX(...)', 'normalize(...)' etc.
+
+You use these built-in methods to 'move / rotate / shape' the vertices (not the mesh itself). that's how the form changes in your geometry.
+
+--------------------
+Most of the geometries documentation pages have examples.
+
+    BoxGeometry To create a box.
+    PlaneGeometry To create a rectangle plane.
+    CircleGeometry To create a disc or a portion of a disc (like a pie chart).
+    ConeGeometry To create a cone or a portion of a cone. You can open or close the base of the cone.
+    CylinderGeometry To create a cylinder. You can open or close the ends of the cylinder and you can change the radius of each end.
+    RingGeometry To create a flat ring or portion of a flat circle.
+    TorusGeometry To create a ring that has a thickness (like a donut) or portion of a ring.
+    TorusKnotGeometry To create some sort of knot geometry.
+    DodecahedronGeometry To create a 12 faces sphere. You can add details for a rounder sphere.
+    OctahedronGeometry To create a 8 faces sphere. You can add details for a rounder sphere.
+    TetrahedronGeometry To create a 4 faces sphere (it won't be much of a sphere if you don't increase details). You can add details for a rounder sphere.
+    IcosahedronGeometry To create a sphere composed of triangles that have roughly the same size.
+    SphereGeometry To create the most popular type of sphere where faces looks like quads (quads are just a combination of two triangles).
+    ShapeGeometry To create a shape based on a path.
+    TubeGeometry To create a tube following a path.
+    ExtrudeGeometry To create an extrusion based on a path. You can add and control the bevel.
+    LatheGeometry To create a vase or portion of a vase (more like a revolution).
+    TextGeometry To create a 3D text. You'll have to provide the font in typeface json format.
+
+If you need a particular geometry that is not supported by Three.js, you can create your own geometry in JavaScript, or you can make it in a 3D software, export it and import it into your project. We will learn more about that later.
+
+---------------------------------------------
+Box Example
+
+We already made a cube but we didn't talk much about the parameters. Most geometries have parameters, and you should always take a look at the documentation before using it.
+
+The BoxGeometry has 6 parameters:
+
+    width: The size on the x axis
+    height: The size on the y axis
+    depth: The size on the z axis
+    widthSegments: How many subdivisions in the x axis
+    heightSegments: How many subdivisions in the y axis
+    depthSegments: How many subdivisions in the z axis
+
+Subdivisions correspond to how much triangles should compose the face. By default it's 1, meaning that there will only be 2 triangles per face. If you set the subdivision to 2, you'll end up with 8 triangles per face:
+  height / 2 and width / 2 = creates 4 squares
+  these squares needs to be turned into triangles, which creates 8 triangles per face.
+
+const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2)
+
+The problem is that we cannot see these triangles.
+
+A good solution is to add wireframe: true to our material. The wireframe will show the lines that delimit each triangle:
+
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+
+--------------------------------------------------
+Creating your own Buffer Geometry
+
+Before creating the Geometry, we need to understand how to store 'BufferGeometry' data. (by using 'Float32Array').
+  - Typed array (a typed array can only store 1 type of value)
+  - Can only store floats (no other data type)
+  - Fixed length (if you say that your array only can store 3 values inside it, then that's the length. you can't store more than 3.)
+  - Easier to handle for the computer
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array
+
+There are two ways of creating a filling a 'Float32Array':
+
+1. you can specify its length and then fill it later
+const positionsArray = new Float32Array(9)
+
+// First vertice
+positionsArray[0] = 0 // x-axis 
+positionsArray[1] = 0 // y-axis
+positionsArray[2] = 0 // z-axis
+
+// Second vertice
+positionsArray[3] = 0 // x-axis 
+positionsArray[4] = 1 // y-axis
+positionsArray[5] = 0 // z-axis
+
+// Third vertice
+positionsArray[6] = 1 // x-axis 
+positionsArray[7] = 0 // y-axis
+positionsArray[8] = 0 // z-axis
+
+2. or you can pass an array
+const positionsArray = new Float32Array([
+    0, 0, 0, // First vertex
+    0, 1, 0, // Second vertex
+    1, 0, 0  // Third vertex
+])
+
+----------------------------------------------
+Look trough the 'Creating your own buffer geometry' section of the recording again.
