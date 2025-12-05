@@ -11,7 +11,55 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 // Object
-const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2) // (width (x-axis), height (y-axis), depth (z-axis), widthSegements, heightSegments, depthSegments)
+// const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2) // (width (x-axis), height (y-axis), depth (z-axis), widthSegements, heightSegments, depthSegments)
+
+// Creating your own Buffer Geometry
+// 1st way of filling a Float32Array
+// const positionsArray = new Float32Array(9)
+
+// // First vertice
+// positionsArray[0] = 0
+// positionsArray[1] = 0
+// positionsArray[2] = 0
+// // Second vertice
+// positionsArray[3] = 0
+// positionsArray[4] = 0
+// positionsArray[5] = 0
+// // Third vertice
+// positionsArray[6] = 0
+// positionsArray[7] = 0
+// positionsArray[8] = 0
+
+// 2nd way of filling a float32Array (by using an Array instead)
+// const positionsArray = new Float32Array([
+//     0,0,0, // First vertice
+//     0,1,0, // Second vertice
+//     1,0,0 // Third vertice
+// ])
+
+// const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3) //fist parameter corresponds to my 'typed array'. and the second parameter corressponds to how value one vertex compose (x, y, z = 3)
+
+// // Adding the BufferAttribute to the BufferGeometry (w. setAttribute())
+// const geometry = new THREE.BufferGeometry()
+// geometry.setAttribute('position', positionsAttribute) // position is the name that will be used in the shaders (we'll look through it in the shaders lesson)
+// //Now a triangle is created!
+
+// We can also create a bunch of triangles
+const geometry = new THREE.BufferGeometry()
+
+const count = 50
+const positionsArray = new Float32Array(count * 3 * 3) // the count (50) is multiplied with the each vertices. and each vertex will be composed of three values-
+
+//now we fill the array with random values
+for( let i = 0; i < count * 3 * 3; i++) {
+
+    positionsArray[i] = Math.random() - 0.5 // -0.5 centers the random triangles
+}
+
+const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
+geometry.setAttribute('position', positionsAttribute)
+
+
 const material = new THREE.MeshBasicMaterial({ 
     color: 0xff0000,
     wireframe: true // gives the material a wireframe look, with a red color.
