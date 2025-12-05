@@ -109,5 +109,73 @@ const positionsArray = new Float32Array([
     1, 0, 0  // Third vertex
 ])
 
-----------------------------------------------
-Look trough the 'Creating your own buffer geometry' section of the recording again.
+SO! these vertex points creates a triangle
+  z axis = 0
+  y axis = 1
+  y axis = 1
+
+A vertex is a point where two or more lines, edges, or curves meet.
+
+--------------
+Before you can send that array to the BufferGeometry, you have to transform it into a BufferAttribute.
+
+The first parameter corresponds to your typed array and the second parameter corresponds to how much values make one vertex attribute. As we saw earlier, to read this array, we have to go 3 by 3 because a vertex position is composed of 3 values (x, y and z):
+
+const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
+
+Then we can add this attribute to our BufferGeometry using the setAttribute(...) method. The first parameter is the name of this attribute and the second parameter is the value:
+
+geometry.setAttribute('position', positionsAttribute)
+
+We chose 'position' as the name because Three.js internal shaders will look for that value to position the vertices. We will see more about that in the shaders lessons.
+
+The faces will be automatically created following the order of the vertices.
+
+All together:
+
+// Create an empty BufferGeometry
+const geometry = new THREE.BufferGeometry()
+
+// Create a Float32Array containing the vertices position (3 by 3)
+const positionsArray = new Float32Array([
+    0, 0, 0, // First vertex
+    0, 1, 0, // Second vertex
+    1, 0, 0  // Third vertex
+])
+
+// Create the attribute and name it 'position'
+const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
+geometry.setAttribute('position', positionsAttribute)
+
+
+-------------
+We can also create a bunch of random triangles:
+
+// Create an empty BufferGeometry
+const geometry = new THREE.BufferGeometry()
+
+// Create 50 triangles (450 values)
+const count = 50
+const positionsArray = new Float32Array(count * 3 * 3)
+for(let i = 0; i < count * 3 * 3; i++)
+{
+    positionsArray[i] = (Math.random() - 0.5) * 4
+}
+
+// Create the attribute and name it 'position'
+const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
+geometry.setAttribute('position', positionsAttribute)
+
+The only difficulty might be the count * 3 * 3 part but it's quite simple to explain: We need 50 triangles. Each triangle is composed of 3 vertices and each vertex is composed of 3 values (x, y, and z).
+Index
+
+---------------------------------------------
+Index
+
+Some geometry have faces that share common vertices
+
+When creating a BufferGeometry, we can specify a bunch of vertices and then the 'indecies' (index in plural) to create the faces and re-use vertices multiple times.
+
+This will improve the performance, since we use less vertices
+
+We're not going to cover it in this lesson though.
