@@ -1,0 +1,529 @@
+Debug UI Notes
+
+https://lil-gui.georgealways.com/
+
+An essential aspect of every creative project is to be able to tweak it easily. The developer (you) and other actors working on the project (like designers or even the client) must be able to change as many parameters as possible.
+
+You have to take this into account for them to find the perfect color, speed, quantity, etc. for the best experience. You might even get unexpected results that look great.
+
+First, we need a debug UI.
+
+While you can create your own debug UI using HTML / CSS / JS, there are already multiple libraries:
+
+    dat.GUI
+    lil-gui
+    control-panel
+    ControlKit
+    Uil
+    Tweakpane
+    Guify
+    Oui
+
+All of these can do what we want, but we will use lil-gui because it’s popular, maintained, and easy to use.
+
+---------------------------------------------
+Initial Three.js journey exercises were using dat.GUI, but it lacked updates and wasn't maintained well.
+So! lil.gui has become the drop-in replacement with even mroe features.
+
+All three.js joruney exercises are now using lil-gui, but you might notice references to dat.GUI in the videos.
+Ignore them and use lil.gui the same way.
+
+---------------------------------------------
+Instantiating lil-gui
+
+To add lil-gui to our project, we can use the dependency manager provided with Node.js called NPM (just like we did for GSAP in a previous lesson).
+
+In your terminal (while the server is not running or by using another terminal window in the same folder) run: 
+  npm install lil-gui
+
+lil-gui is now available in the node_modules/ folder and we can import it into our script.js. Don't forget to relaunch the server
+
+import './style.css'
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import gsap from 'gsap'
+import GUI from 'lil-gui'
+
+// ...
+
+You can now instantiate lil-gui in a gui variable and we can do that at the very beginning, right after the imports:
+
+/**
+ * Debug
+ */
+const gui = new GUI()
+
+In the rest of the course, you might see something more like this:
+
+import * as dat from 'lil-gui'
+
+// ...
+
+const gui = new dat.GUI()
+
+It basically boils down to the same thing. Feel free to use whatever solution you prefer.
+
+-----------------------------------------
+The different types of tweaks
+
+On the top right corner of the experience, you can see an empty panel. There are different types of tweaks you can add to that panel:
+
+    Range —for numbers with minimum and maximum value
+    Color —for colors with various formats
+    Text —for simple texts
+    Checkbox —for booleans (true or false)
+    Select —for a choice from a list of values
+    Button —to trigger functions
+
+Let's cover some of these tweaks.
+
+-------------
+Most of the tweaks can be added using 'gui.add(...)'
+  Parameters: the object, the property of that object
+
+You need to add the 'gui.add(...)' after you've created the object and its property (not before! it won't work)
+
+let's try to tweak the 'mesh.position.y':
+
+const mesh = new THREE.Mesh(geometry, material)
+scene.add(mesh)
+
+gui.add(mesh.position, 'y')
+
+To specify the minimum value, the maximum value, and the precision, you can set them in the parameters:
+
+gui.add(mesh.position, 'y', - 3, 3, 0.01)
+
+By doing that, we get a handy range input that we can drag and drop.
+
+If you don’t like to have that many parameters, you can use the methods min(...), max(...), and step(...) by chaining directly after the add(...) method:
+
+gui.add(mesh.position, 'y').min(- 3).max(3).step(0.01)
+
+And if you don't like having too many methods chained in one line, you can simply add line breaks:
+
+gui
+    .add(mesh.position, 'y')
+    .min(- 3)
+    .max(3)
+    .step(0.01)
+
+To change the label, use the the name(...) method:
+
+gui
+    .add(mesh.position, 'y')
+    .min(- 3)
+    .max(3)
+    .step(0.01)
+    .name('elevation')
+
+----------------
+lil-gui can only modify properties
+
+if you want to update a variable, you can't:
+  let myVariable = 1337
+  gui.add(myVariable, '???')
+
+But you can create an object whose purpose is to hold properties (variables if this case):
+  const myObject = {
+    myVariable: 1337
+  }
+
+  gui.add(myObject, myVariable)
+
+Remove this example
+
+-----------------
+Checkbox
+
+lil-gui will detect what kind of property youo want to tweak and use the corresponding interface.
+
+Try with the 'visiable' property of Object3D
+
+gui.add(mesh, 'visible') // Creates a checkbox that makes the mesh visible / invisible when click / unclicked.
+
+Do the same with the 'wireframe' property of the material
+
+gui.add(material, 'wireframe') // Creates a checkbox that makes the material wireframe visible / invisible when click / unclicked.
+
+-------------------
+Colors
+
+Colors
+
+Handling colors is a little harder. Let’s try modifying the color property of the material.
+
+First, we need to use addColor(...) instead of add(...) because the color property is not a string, a boolean, or a number. It’s an object with various properties because it’s an instance of the Three.js Color class. Among those properties are r, g and b , which lil-gui can use to display a nice tweak:
+
+gui.addColor(material, 'color')
+
+You should see a color picker in your panel.
+
+Now try to take the color value from the tweak and apply it to the color property:
+  const material = new THREE.MeshBasicMaterial({ color: '#ff0000' })
+
+You end up with the wrong color:
+
+This is because Three.js applies some color management in order to optimise the rendering. As a result, the color value that is being displayed in the tweak isn’t the same value as the one being used internally.
+
+We are not going to talk about color management right now and leave it for a future lesson. Yet, we want the right color value.
+
+There are two ways of dealing with this.
+
+---------
+Retrieving the modified color
+
+Solution 1.
+
+The first solution consists of retrieving the color used internally by Three.js thanks to the getHexString() method on the Color instance when the tweak value changes.
+
+To start with, we need to be aware of any tweak change. To do that, we can use the onChange() method:
+
+gui
+    .addColor(material, 'color')
+    .onChange(() =>
+    {
+        console.log('value has changed')
+    })
+
+Next, we need to access the Color instance and we can use the classic material.color or we can retrieve a value directly as a parameter of the function:
+
+gui
+    .addColor(material, 'color')
+    .onChange((value) =>
+    {
+        console.log(material.color)
+        console.log(value)
+    })
+
+Both are the same Color instance from the color property of the material.
+
+Let’s use the value and log the result of the getHexString():
+
+gui
+    .addColor(material, 'color')
+    .onChange((value) =>
+    {
+        console.log(value.getHexString())
+    })
+
+So, this is the color value you can safely use in your code.
+
+The problem with this technique is that you need to have the Console open, and this is not handy, especially for designers, or the client.
+
+--------
+Only dealing with non-modified color
+
+Solution 2.
+
+The second solution consists of dealing with the color before it gets modified by Three.js.
+
+First, we need to save the color somewhere outside of Three.js. We are going to create an object whose purpose is to hold properties.
+
+I personally like to call it global, parameters, or debugObject and put it right after instantiating lil-gui:
+
+const gui = new GUI()
+const debugObject = {}
+
+Then, we are going to add a color property to debugObject and we are going to do it before creating the cube so that we can immediately send it to the color property of the MeshBasicMaterial:
+
+debugObject.color = '#3a6ea6'
+
+const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2)
+const material = new THREE.MeshBasicMaterial({ color: debugObject.color, wireframe: false })
+
+By doing that, we have the initial color at only one place.
+
+Then, instead of the previous tweak we had on the material.color, we are going to change it to debugObject.color:
+
+gui
+    .addColor(debugObject, 'color')
+    .onChange(() =>
+    {
+        console.log(value.getHexString())
+    })
+
+And finally, instead of doing a console.log(), we are going to update the material.color using the set() method:
+
+gui
+    .addColor(debugObject, 'color')
+    .onChange(() =>
+    {
+        material.color.set(debugObject.color)
+    })
+
+I like to use that solution so that nobody has to open the Console, but it’s up to you.
+
+Let’s put back the debugObject.color to #a778d8.
+
+-----------------
+Function / Button
+
+Sometimes we just want to trigger instructions on demand.
+We want to make the cube perform a spin animation when we click somewhere in our debug UI
+
+We can do that by sending a property to the tweak which contains a function. Unfortunately, this means that we can’t have a function sitting like this on its own and then send it to lil-gui:
+
+const myFunction = () => {
+    console.log('do something')
+}
+gui.add(myFunction, '???')
+
+But we can add a spin property to the debugObject object we created earlier and integrate a GSAP animation into it:
+
+debugObject.spin = () =>
+{
+    gsap.to(mesh.rotation, { duration: 1, y: mesh.rotation.y + Math.PI * 2 })
+}
+
+Finally, we can add the tweak to debugObject.spin:
+
+debugObject.spin = () =>
+{
+    // ...
+}
+gui.add(debugObject, 'spin')
+
+You should see a spin button, and clicking on it will result in your cube doing a 360 ° rotation.
+
+-------------------------------------------
+Tweaking the geometry
+
+Why don’t we try and tweak the geometry subdivision?
+
+First, we are going to set the wireframe to true in order to visualise the triangles:
+
+const material = new THREE.MeshBasicMaterial({ color: '#9c7fe3', wireframe: true })
+
+If you check the BoxGeometry documentation, you’ll see that the parameters to control the subdivision are named widthSegments, heightSegments, and depthSegments.
+
+Let’s try to add a tweak to the geometry.widthSegments:
+
+gui
+    .add(geometry, 'widthSegments')
+    .min(1)
+    .max(20)
+    .step(1)
+
+We get an error because widthSegments isn’t a property of the geometry.
+
+widthSegments is only a parameter that we send to the BoxGeometry when we instantiate it. It’ll be used to generate the whole geometry only once.
+
+First, since it’s not an actual property, we need to add a subdivision property to the debugObject object and apply our tweak to it:
+
+debugObject.subdivision = 2
+gui
+    .add(debugObject, 'subdivision')
+    .min(1)
+    .max(20)
+    .step(1)
+
+We named it subdivision so that we can use it on all three widthSegments, heightSegments, and depthSegments.
+
+Next, when the tweak value changes, we are going to destroy the old geometry and build a brand-new one.
+
+To do that, we are first going to listen to the onChange event in the tweak:
+
+gui
+    .add(debugObject, 'subdivision')
+    .min(1)
+    .max(20)
+    .step(1)
+    .onChange(() =>
+    {
+        console.log('subdivision changed')
+    })
+
+Building a geometry can be a rather lengthy process for the CPU. Right now, we are listening to the change event which can be triggered a lot if the user drags and drops the range tweak too much.
+
+Instead of using onChange, we are going to use onFinishChange, which will only be triggered when we stop tweaking the value:
+
+gui
+    .add(debugObject, 'subdivision')
+    .min(1)
+    .max(20)
+    .step(1)
+    .onFinishChange(() =>
+    {
+        console.log('subdivision finished changing')
+    })
+
+Instead of that console.log(), we can build a new geometry using debugObject.subdivision and associate it with the mesh by assigning it to its geometry property:
+
+gui
+    .add(debugObject, 'subdivision')
+    .min(1)
+    .max(20)
+    .step(1)
+    .onFinishChange(() =>
+    {
+        mesh.geometry = new THREE.BoxGeometry(
+            1, 1, 1,
+            debugObject.subdivision, debugObject.subdivision, debugObject.subdivision
+        )
+    })
+
+And that’s it, but we made a small mistake. The old geometries are still sitting somewhere in the GPU memory which can create a memory leak.
+
+To fix that, we can call the dispose() method on the old geometry before creating the new one:
+
+gui
+    .add(debugObject, 'subdivision')
+    .min(1)
+    .max(20)
+    .step(1)
+    .onFinishChange(() =>
+    {
+        mesh.geometry.dispose()
+        mesh.geometry = new THREE.BoxGeometry(
+            1, 1, 1,
+            debugObject.subdivision, debugObject.subdivision, debugObject.subdivision
+        )
+    })
+
+---------------------------------------------
+Folders
+
+Let’s imagine that we have a lot more tweaks and the debug UI starts to get crowded. We can separate them into folders by using the addFolder() method.
+
+To create a folder, call addFolder() and send the name you want for it as the parameter. Make sure to do it before the tweaks and save it as cubeTweaks:
+
+const cubeTweaks = gui.addFolder('Awesome cube')
+
+Then, instead of using gui to create tweaks, use the cubeTweaks variable:
+
+const cubeTweaks = gui.addFolder('Awesome cube')
+
+cubeTweaks
+    .add(mesh.position, 'y')
+    // ...
+
+cubeTweaks
+    .add(mesh, 'visible')
+
+cubeTweaks
+    .add(material, 'wireframe')
+
+cubeTweaks
+    .addColor(material, 'color')
+    // ...
+
+// ...
+cubeTweaks
+    .add(debugObject, 'spin')
+
+// ...
+cubeTweaks
+    .add(debugObject, 'subdivision')
+    // ...
+
+You can close it by default with the close() method:
+
+const cubeTweaks = gui.addFolder('Awesome cube')
+cubeTweaks.close()
+
+Although we won’t do it, you can nest folders inside folders. No excuse for a messy debug UI!
+
+Let’s comment the close():
+
+// cubeTweaks.close()
+
+---------------------------------------------------
+GUI Setup
+
+lil-gui is flexible and we are going to see some parameters, methods, and tricks to get the best out of it.
+Width
+
+You can control the width by sending an object to the GUI constructor with a width property:
+
+const gui = new GUI({
+    width: 300
+})
+
+Title
+
+You can change the title on top of the panel with the title property:
+
+const gui = new GUI({
+    width: 300,
+    title: 'Nice debug UI'
+})
+
+Close folders
+
+You can close all folders by default with closeFolders:
+
+const gui = new GUI({
+    width: 300,
+    title: 'Nice debug UI',
+    closeFolders: true
+})
+
+Let’s put it back to false:
+
+const gui = new GUI({
+    width: 300,
+    title: 'Nice debug UI',
+    closeFolders: false
+})
+
+Close
+
+You can close it by calling the close() method:
+
+const gui = new GUI({
+    width: 300,
+    title: 'Nice debug UI',
+    closeFolders: false,
+})
+gui.close()
+
+Comment the close():
+
+// gui.close()
+
+Hide
+
+You can hide it fully by calling the hide() method:
+
+const gui = new GUI({
+    width: 300,
+    title: 'Nice debug UI',
+    closeFolders: false,
+})
+// gui.close()
+gui.hide()
+
+Toggling
+
+But how can we display it once again? This is up to you, but a quick solution could be to listen to the keydown event and if it’s the h key, we toggle it according to the _hidden property indicating if it’s currently hidden as a boolean:
+
+window.addEventListener('keydown', (event) =>
+{
+    if(event.key == 'h')
+        gui.show(gui._hidden)
+})
+
+Comment the hide() to have it visible by default:
+
+// gui.hide()
+
+More
+
+There: we are done. But if you are curious, have a look at the lil-gui documentation (https://lil-gui.georgealways.com/) for more setup and features like:
+
+    Styling
+    Positioning
+    Having the tweak updated if the property changes
+    Other types of tweaks like the Select
+    Etc.
+
+
+---------------------------------------------
+Conclusion
+
+We will use our debug UI during specific moments of the next exercises. However, feel free to add as many tweaks as you want. It's an excellent way to practice and start building some creative stuff.
+
+I would recommend you add tweaks as you progress. If you think of adding all the tweaks at the end of the project, you'll probably end up with no tweaks at all and missed opportunities.
+
+Remember that some of the next lessons were recorded using dat.GUI instead of lil-gui. It doesn’t make a big difference and you should be able to follow without problem.
