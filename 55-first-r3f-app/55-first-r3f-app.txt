@@ -1,0 +1,217 @@
+First R3F Application Notes
+
+Introduction
+
+We know Three.js, we know React (at least the basics). Now it’s time to learn how to integrate Three.js into React. As we saw earlier, the best solution is to use React Three Fiber (or R3F).
+
+R3F is a React renderer. We write JSX and it gets rendered into Three.js.
+
+As an example, creating a Mesh composed of a BoxGeometry and a MeshBasicMaterial is as simple as this:
+
+<mesh>
+    <boxGeometry />
+    <meshBasicMaterial />
+</mesh>
+
+You might think that we forgot to specify information like the size of the BoxGeometry but R3F will set default parameters to simplify our life. And that’s just one of the many life improvements we get with R3F.
+
+---------------------------------------------------
+Setup
+
+The /src/index.jsx renders “Soon to be a badass R3F application”.
+
+We load the style.css file from index.jsx but it’s currently empty.
+
+Note that, most React projects start by rendering an App component, but there is no real reason, especially in this learning context.
+
+We can start with npm run dev from the terminal.
+
+---------------------------------------------------
+React Three Fiber setup
+
+It’s time to add R3F and it’s actually quite easy.
+
+First, add the @react-three/fiber and the three dependencies from the terminal with npm install three@0.174 @react-three/fiber@9.1 (we force the versions to prevent surprises, you can ignore potential vulnerability warnings).
+
+As you can see, the R3F dependency is written in a very specific way.
+
+The presence of the @ at the beginning means that it’s part of a bigger system (which we call “scope”) named react-three and the /fiber is the part that we are currently retrieving.
+
+This means that there are other parts in the @react-three scope and we are going to use them too.
+
+In a way, “React Three Fiber” should be called “React Three” when speaking about the general scope and, here, we are only adding Fiber to our project.
+
+----------------------------------------------------
+The syntax
+
+As we mentioned earlier, R3F is a React renderer (we write JSX and it gets converted to Three.js).
+
+Let’s have a look at some examples. Don’t worry if you don’t understand or remember everything, we are going to cover those in detail later.
+A simple mesh
+
+Native Three.js:
+
+const mesh = new THREE.Mesh()
+mesh.geometry = new THREE.BoxGeometry(1, 1, 1)
+mesh.material = new THREE.MeshBasicMaterial({ color: 'red' })
+
+scene.add(mesh)
+
+R3F:
+
+<mesh>
+    <boxGeometry />
+    <meshBasicMaterial color="red" />
+</mesh>
+
+The geometry and the material are automatically associated with the mesh.
+
+The syntax is shorter and easier to understand.
+
+Default parameters are automatically set for us.
+
+----------------------
+Position and rotation
+
+Native Three.js:
+
+const mesh = new THREE.Mesh()
+mesh.position.set(1, 2, 3)
+mesh.rotation.x = 0.5
+mesh.geometry = new THREE.BoxGeometry(1, 1, 1)
+mesh.material = new THREE.MeshBasicMaterial({ color: 'red' })
+
+scene.add(mesh)
+
+R3F:
+
+<mesh position={ [ 1, 2, 3 ] } rotation-x={ 0.5 }>
+    <boxGeometry />
+    <meshBasicMaterial color="red" />
+</mesh>
+
+Again, things are much shorter.
+
+The set function seems to be called automatically and we can still change individual properties like the rotation.x
+
+----------------------
+Nested objects
+
+Native Three.js:
+
+const group = new THREE.Group()
+scene.add(group)
+
+const mesh1 = new THREE.Mesh()
+mesh1.geometry = new THREE.BoxGeometry(1, 1, 1)
+mesh1.material = new THREE.MeshBasicMaterial({ color: 'red' })
+
+const mesh2 = new THREE.Mesh()
+mesh2.geometry = new THREE.SphereGeometry(0.5)
+mesh2.material = new THREE.MeshBasicMaterial({ color: 'orange' })
+
+group.add(mesh1, mesh2)
+
+R3F:
+
+<group>
+    <mesh>
+        <boxGeometry />
+        <meshBasicMaterial color="red" />
+    </mesh>
+    <mesh>
+        <sphereGeometry />
+        <meshBasicMaterial color="orange" />
+    </mesh>
+</group>
+
+And that’s where the tag based structure gets really handy. Before, we had to struggle a moment before understanding what is inside what.
+
+Now, we can see it clearly from the indentation.
+
+And this is just the tip of the iceberg.
+
+--------------------
+How does R3F know how to combine components?
+
+Because JSX is a tag based language, we end up with things inside other things.
+
+Let’s use the previous example again:
+
+<group>
+    <mesh>
+        <boxGeometry />
+        <meshBasicMaterial color="red" />
+    </mesh>
+    <mesh>
+        <sphereGeometry />
+        <meshBasicMaterial color="orange" />
+    </mesh>
+</group>
+
+Here, we clearly have two <mesh> inside a <group>.
+
+R3F will create the group, then call add() on it and pass it the two meshes:
+
+const group = new THREE.Group()
+scene.add(group)
+
+const mesh1 = new THREE.Mesh()
+const mesh2 = new THREE.Mesh()
+group.add(mesh1, mesh2)
+
+This is the default behaviour, but what about the <boxGeometry>, <sphereGeometry> and <meshBasicMaterial>?
+
+To understand that, we need to talk about the attach attribute.
+
+The attach attribute allows the developer to assign the component to a specific property of the parent instead of trying to add() it.
+
+If we write our previous example with the attach attribute, it would look like this:
+
+<group>
+    <mesh>
+        <boxGeometry attach="geometry" />
+        <meshBasicMaterial attach="material" color="red" />
+    </mesh>
+    <mesh>
+        <sphereGeometry attach="geometry" />
+        <meshBasicMaterial attach="material" color="orange" />
+    </mesh>
+</group>
+
+The <boxGeometry> and <sphereGeometry> are assigned to the geometry property of the <mesh>.
+
+The <meshBasicMaterial> is assigned to the material property of the parent <mesh>.
+
+R3F won’t try to add() them to the <mesh>.
+
+But wait, we didn’t have to write those attach attributes before, right?
+
+Yes, and it’s because R3F will first check the name of the component:
+
+    If it ends with "Material", it’ll automatically assign it to the material property.
+    If it ends with "Geometry", it’ll automatically assign it to the geometry property.
+
+Again, this is one of the many features which are intended to make the developer’s life easier.
+
+---------------------
+Which Three.js classes are supported?
+
+You might have noticed that we wrote the various components in camelCase (<mesh>, <boxGeometry>, etc.) and those components match Three.js classes (THREE.Mesh, THREE.BoxGeometry, etc.)
+
+But which Three.js classes are supported exactly?
+
+All of them!
+
+R3F will implement all classes automatically. This is great because, when Three.js is being updated, and classes are being added or changed, R3F won’t break and those new classes will be supported without doing anything.
+
+But why camelCase then? Can’t we write <Mesh> instead of <mesh>?
+
+This is a React convention. Native host elements (the ones available in the renderer) are in camelCase while custom components are written in PascalCase.
+
+In the case of R3F, we can think of it like:
+
+    Automatically generated primitive components are in camelCase
+    More specific components are in PascalCase
+
+---------------------------------------------------------------------
